@@ -1,0 +1,1620 @@
+openapi: 3.0.0
+info:
+  title: PICCOLO Cloud CI/CD Platform API
+  description: API for PICCOLO Cloud CI/CD Platform with integrated database schema
+  version: 1.0.0
+  contact:
+    name: PICCOLO Development Team
+    email: piccolo-dev@lge.com
+servers:
+  - url: https://api.piccolo.sdv.lge.com/v1
+    description: Production API Server
+  - url: https://api-dev.piccolo.sdv.lge.com/v1
+    description: Development API Server
+security:
+  - bearerAuth: []
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    # 기본 응답 스키마
+    Response:
+      type: object
+      properties:
+        success:
+          type: boolean
+        message:
+          type: string
+        data:
+          type: object
+        error:
+          type: object
+        
+    # 인증 관련 스키마
+    LoginRequest:
+      type: object
+      required:
+        - username
+        - password
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+        mfaCode:
+          type: string
+          
+    UserInfo:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        email:
+          type: string
+        fullName:
+          type: string
+        role:
+          type: string
+        department:
+          type: string
+        status:
+          type: string
+        
+    # 프로젝트 관련 스키마
+    Project:
+      type: object
+      properties:
+        id:
+          type: integer
+        projectCode:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+        createdBy:
+          type: integer
+        status:
+          type: string
+        version:
+          type: string
+        metadata:
+          type: object
+        resources:
+          type: object
+        team:
+          type: object
+        repositories:
+          type: object
+            
+    ProjectCreateRequest:
+      type: object
+      required:
+        - name
+        - projectCode
+      properties:
+        name:
+          type: string
+        projectCode:
+          type: string
+        description:
+          type: string
+        metadata:
+          type: object
+        resources:
+          type: object
+          properties:
+            regions:
+              type: array
+              items:
+                type: integer
+            vehicleModels:
+              type: array
+              items:
+                type: integer
+            hardware:
+              type: array
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  purpose:
+                    type: string
+                  isPrimary:
+                    type: boolean
+        team:
+          type: array
+          items:
+            type: object
+            properties:
+              userId:
+                type: integer
+              role:
+                type: string
+        repositories:
+          type: array
+          items:
+            type: object
+            properties:
+              url:
+                type: string
+              name:
+                type: string
+              purpose:
+                type: string
+              branch:
+                type: string
+              
+    # 리소스 카탈로그 스키마
+    ResourceCatalog:
+      type: object
+      properties:
+        id:
+          type: integer
+        resourceType:
+          type: string
+        code:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        properties:
+          type: object
+        parentId:
+          type: integer
+        active:
+          type: boolean
+          
+    ResourceCatalogCreateRequest:
+      type: object
+      required:
+        - resourceType
+        - code
+        - name
+      properties:
+        resourceType:
+          type: string
+        code:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        properties:
+          type: object
+        parentId:
+          type: integer
+        active:
+          type: boolean
+          default: true
+          
+    # 개발 아티팩트 스키마
+    DevelopmentArtifact:
+      type: object
+      properties:
+        id:
+          type: integer
+        projectId:
+          type: integer
+        artifactType:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+        createdBy:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        properties:
+          type: object
+        executionDetails:
+          type: object
+        references:
+          type: object
+        startedAt:
+          type: string
+          format: date-time
+        completedAt:
+          type: string
+          format: date-time
+          
+    DevelopmentArtifactCreateRequest:
+      type: object
+      required:
+        - projectId
+        - artifactType
+        - name
+      properties:
+        projectId:
+          type: integer
+        artifactType:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        properties:
+          type: object
+        references:
+          type: object
+          
+    # 배포 아티팩트 스키마
+    DeliveryArtifact:
+      type: object
+      properties:
+        id:
+          type: integer
+        projectId:
+          type: integer
+        artifactType:
+          type: string
+        name:
+          type: string
+        version:
+          type: string
+        description:
+          type: string
+        status:
+          type: string
+        createdBy:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+        content:
+          type: string
+        properties:
+          type: object
+        references:
+          type: object
+        validation:
+          type: object
+        execution:
+          type: object
+        security:
+          type: object
+        publishedAt:
+          type: string
+          format: date-time
+        deployedAt:
+          type: string
+          format: date-time
+        vehicleInfo:
+          type: object
+          
+    DeliveryArtifactCreateRequest:
+      type: object
+      required:
+        - projectId
+        - artifactType
+        - name
+      properties:
+        projectId:
+          type: integer
+        artifactType:
+          type: string
+        name:
+          type: string
+        version:
+          type: string
+        description:
+          type: string
+        content:
+          type: string
+        properties:
+          type: object
+        references:
+          type: object
+          
+    # 차량 트랜잭션 스키마
+    VehicleTransaction:
+      type: object
+      properties:
+        id:
+          type: integer
+        deliveryId:
+          type: integer
+        vin:
+          type: string
+        transactionType:
+          type: string
+        timestamp:
+          type: string
+          format: date-time
+        status:
+          type: string
+        details:
+          type: object
+        ipAddress:
+          type: string
+          
+    VehicleTransactionCreateRequest:
+      type: object
+      required:
+        - deliveryId
+        - vin
+        - transactionType
+        - status
+      properties:
+        deliveryId:
+          type: integer
+        vin:
+          type: string
+        transactionType:
+          type: string
+        status:
+          type: string
+        details:
+          type: object
+        ipAddress:
+          type: string
+
+paths:
+  # 인증 관련 API
+  /auth/login:
+    post:
+      summary: 사용자 로그인
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: 로그인 성공
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Response'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          token:
+                            type: string
+                          user:
+                            $ref: '#/components/schemas/UserInfo'
+        '401':
+          description: 인증 실패
+  
+  /auth/me:
+    get:
+      summary: 현재 로그인한 사용자 정보 조회
+      tags:
+        - Authentication
+      responses:
+        '200':
+          description: 사용자 정보
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Response'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/UserInfo'
+
+  # 프로젝트 관련 API
+  /projects:
+    get:
+      summary: 프로젝트 목록 조회
+      tags:
+        - Projects
+      parameters:
+        - in: query
+          name: status
+          schema:
+            type: string
+          description: 프로젝트 상태 필터
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: 페이지 번호
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+          description: 페이지당 항목 수
+      responses:
+        '200':
+          description: 프로젝트 목록
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Response'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          items:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/Project'
+                          total:
+                            type: integer
+                          page:
+                            type: integer
+                          limit:
+                            type: integer
+    
+    post:
+      summary: 프로젝트 생성
+      tags:
+        - Projects
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectCreateRequest'
+      responses:
+        '201':
+          description: 프로젝트 생성 성공
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Response'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Project'
+  
+  /projects/{id}:
+    get:
+      summary: 프로젝트 상세 조회
+      tags:
+        - Projects
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: 프로젝트 ID
+      responses:
+        '200':
+          description: 프로젝트 상세 정보
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Response'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Project'
+    
+    put:
+      summary: 프로젝트 정보 수정
+      tags:
+        - Projects
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: 프로젝트 ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                status:
+                  type: string
+                metadata:
+                  type: object
+                resources:
+                  type: object
+                team:
+                  type: object
+                repositories:
+                  type: object
+      responses:
+        '200':
+          description: 프로젝트 수정 성공
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Response'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Project'
+    
+    delete:
+      summary: 프로젝트 삭제
+      tags:
+        - Projects
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: 프로젝트 ID
+      responses:
+        '200':
+          description: 프로젝트 삭제 성공
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Response'
+
+  # 리소스 카탈로그 API
+  /resources:
+    get:
+      summary: 리소스 카탈로그 조회
+      tags:
+        - Resources
+      parameters:
+        - in: query
+          name: resourceType
+          schema:
+            type: string
+          description: 리소스 타입 필터 (region, vehicle_model, hardware, build_platform 등)
+        - in: query
+          name: parentId
+          schema:
+            type: integer
+          description: 부모 리소스 ID 필터
+        - in: query
+          name: active
+          schema:
+            type: boolean
+          description: 활성 상태 필터
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: 페이지 번호
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 50
+          description: 페이지당 항목 수
+      responses:
+        '200':
+          description: 리소스 목록
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Response'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          items:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/ResourceCatalog'
+                          total:
+                            type: integer
+                          page:
+                            type: integer
+                          limit:
+                            type: integer
+    
+    post:
+      summary: 리소스 생성
+      tags:
+        - Resources
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResourceCatalogCreateRequest'
+      responses:
+        '201':
+          description: 리소스 생성 성공
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Response'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ResourceCatalog'
+
+  /resources/{id}:
+    get:
+      summary: 리소스 상세 조회
+      tags:
+        - Resources
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: 리소스 ID
+      responses:
+        '200':
+          description: 리소스 상세 정보
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Response'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ResourceCatalog'
+    
+    put:
+      summary: 리소스 정보 수정
+      tags:
+        - Resources
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: 리소스 ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                properties:
+                  type: object
+                active:
+                  type: boolean
+      responses:
+        '200':
+          description: 리소스 수정 성공
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Response'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/ResourceCatalog'
+
+  # 개발 아티팩트 API
+  /development/artifacts:
+    get:
+      summary: 개발 아티팩트 목록 조회
+      tags:
+        - Development
+      parameters:
+        - in: query
+          name: projectId
+          schema:
+            type: integer
+          description: 프로젝트 ID 필터
+        - in: query
+          name: artifactType
+          schema:
+            type: string
+          description: 아티팩트 타입 필터 (workspace, signal, scenario, build 등)
+        - in: query
+          name: status
+          schema:
+            type: string
+          description: 상태 필터
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: 페이지 번호
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+          description: 페이지당 항목 수
+      responses:
+        '200':
+          description: 개발 아티팩트 목록
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Response'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          items:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/DevelopmentArtifact'
+                          total:
+                            type: integer
+                          page:
+                            type: integer
+                          limit:
+                            type: integer
+    
+    post:
+      summary: 개발 아티팩트 생성
+      tags:
+        - Development
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DevelopmentArtifactCreateRequest'
+      responses:
+        '201':
+          description: 개발 아티팩트 생성 성공
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Response'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/DevelopmentArtifact'
+
+  /development/artifacts/{id}:
+    get:
+      summary: 개발 아티팩트 상세 조회
+      tags:
+        - Development
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: 개발 아티팩트 ID
+      responses:
+        '200':
+          description: 개발 아티팩트 상세 정보
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Response'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/DevelopmentArtifact'
+    
+    put:
+      summary: 개발 아티팩트 정보 수정
+      tags:
+        - Development
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: 개발 아티팩트 ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                description:
+                  type: string
+                status:
+                  type: string
+                properties:
+                  type: object
+                executionDetails:
+                  type: object
+                references:
+                  type: object
+      responses:
+        '200':
+          description: 개발 아티팩트 수정 성공
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Response'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/DevelopmentArtifact'
+
+  /development/artifacts/{id}/execute:
+    post:
+      summary: 개발 아티팩트 실행 (빌드, 시뮬레이션 등)
+      tags:
+        - Development
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: 개발 아티팩트 ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                executionConfig:
+                  type: object
+                  description: 실행 구성 정보
+      responses:
+        '200':
+          description: 실행 시작 성공
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Response'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/DevelopmentArtifact'
+
+  # 배포 아티팩트 API
+  /delivery/artifacts:
+    get:
+      summary: 배포 아티팩트 목록 조회
+      tags:
+        - Delivery
+      parameters:
+        - in: query
+          name: projectId
+          schema:
+            type: integer
+          description: 프로젝트 ID 필터
+        - in: query
+          name: artifactType
+          schema:
+            type: string
+          description: 아티팩트 타입 필터 (yaml, template, deployment, package 등)
+        - in: query
+          name: status
+          schema:
+            type: string
+          description: 상태 필터
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: 페이지 번호
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+          description: 페이지당 항목 수
+      responses:
+        '200':
+          description: 배포 아티팩트 목록
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Response'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          items:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/DeliveryArtifact'
+                          total:
+                            type: integer
+                          page:
+                            type: integer
+                          limit:
+                            type: integer
+    
+    post:
+      summary: 배포 아티팩트 생성
+      tags:
+        - Delivery
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DeliveryArtifactCreateRequest'
+      responses:
+        '201':
+          description: 배포 아티팩트 생성 성공
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Response'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/DeliveryArtifact'
+
+  /delivery/artifacts/{id}:
+    get:
+      summary: 배포 아티팩트 상세 조회
+      tags:
+        - Delivery
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: 배포 아티팩트 ID
+      responses:
+        '200':
+          description: 배포 아티팩트 상세 정보
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Response'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/DeliveryArtifact'
+    
+    put:
+      summary: 배포 아티팩트 정보 수정
+      tags:
+        - Delivery
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: 배포 아티팩트 ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                version:
+                  type: string
+                description:
+                  type: string
+                status:
+                  type: string
+                content:
+                  type: string
+                properties:
+                  type: object
+                references:
+                  type: object
+                validation:
+                  type: object
+                security:
+                  type: object
+      responses:
+        '200':
+          description: 배포 아티팩트 수정 성공
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Response'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/DeliveryArtifact'
+
+  /delivery/artifacts/{id}/validate:
+    post:
+      summary: 배포 아티팩트 검증 (YAML 유효성 검사 등)
+      tags:
+        - Delivery
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: 배포 아티팩트 ID
+      responses:
+        '200':
+          description: 검증 결과
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Response'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          valid:
+                            type: boolean
+                          validationDetails:
+                            type: object
+
+  /delivery/artifacts/{id}/deploy:
+    post:
+      summary: 배포 아티팩트 배포 실행
+      tags:
+        - Delivery
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: 배포 아티팩트 ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                deploymentConfig:
+                  type: object
+                  description: 배포 구성 정보
+                targetEnvironment:
+                  type: string
+                  description: 배포 대상 환경
+      responses:
+        '200':
+          description: 배포 시작 성공
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Response'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/DeliveryArtifact'
+
+  /delivery/artifacts/{id}/publish:
+    post:
+      summary: 패키지 발행
+      tags:
+        - Delivery
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: 패키지 아티팩트 ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                approvals:
+                  type: object
+                  description: 승인 정보
+                releaseNotes:
+                  type: string
+                  description: 릴리스 노트
+      responses:
+        '200':
+          description: 발행 성공
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Response'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/DeliveryArtifact'
+
+  # 차량 인증 및 배포 API
+  /vehicle/auth:
+    post:
+      summary: 차량 인증
+      tags:
+        - Vehicle
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - vin
+                - certificate
+              properties:
+                vin:
+                  type: string
+                  description: 차량 VIN
+                certificate:
+                  type: string
+                  description: 인증서
+                hardwareInfo:
+                  type: object
+                  description: 하드웨어 정보
+      responses:
+        '200':
+          description: 인증 성공
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Response'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          token:
+                            type: string
+                          expiresAt:
+                            type: string
+                            format: date-time
+
+  /vehicle/packages/{id}/request:
+    post:
+      summary: 패키지 요청
+      tags:
+        - Vehicle
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: integer
+          description: 패키지 ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - token
+                - vin
+              properties:
+                token:
+                  type: string
+                  description: 인증 토큰
+                vin:
+                  type: string
+                  description: 차량 VIN
+                encryptionCapabilities:
+                  type: object
+                  description: 지원 암호화 방식
+      responses:
+        '200':
+          description: 패키지 정보 반환
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Response'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          yamlContent:
+                            type: string
+                          encryptionKeyId:
+                            type: string
+                          containerImageUrl:
+                            type: string
+                          signature:
+                            type: string
+
+  /vehicle/transactions:
+    get:
+      summary: 차량 트랜잭션 목록 조회
+      tags:
+        - Vehicle
+      parameters:
+        - in: query
+          name: deliveryId
+          schema:
+            type: integer
+          description: 배포 ID 필터
+        - in: query
+          name: vin
+          schema:
+            type: string
+          description: 차량 VIN 필터
+        - in: query
+          name: transactionType
+          schema:
+            type: string
+          description: 트랜잭션 타입 필터
+        - in: query
+          name: status
+          schema:
+            type: string
+          description: 상태 필터
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: 페이지 번호
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 50
+          description: 페이지당 항목 수
+      responses:
+        '200':
+          description: 트랜잭션 목록
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Response'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          items:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/VehicleTransaction'
+                          total:
+                            type: integer
+                          page:
+                            type: integer
+                          limit:
+                            type: integer
+    
+    post:
+      summary: 차량 트랜잭션 생성
+      tags:
+        - Vehicle
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VehicleTransactionCreateRequest'
+      responses:
+        '201':
+          description: 트랜잭션 생성 성공
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Response'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/VehicleTransaction'
+
+  # 관리 및 모니터링 API
+  /admin/users:
+    get:
+      summary: 사용자 목록 조회 (관리자 전용)
+      tags:
+        - Administration
+      parameters:
+        - in: query
+          name: role
+          schema:
+            type: string
+          description: 역할 필터
+        - in: query
+          name: status
+          schema:
+            type: string
+          description: 상태 필터
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: 페이지 번호
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 20
+          description: 페이지당 항목 수
+      responses:
+        '200':
+          description: 사용자 목록
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Response'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          items:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/UserInfo'
+                          total:
+                            type: integer
+                          page:
+                            type: integer
+                          limit:
+                            type: integer
+
+  /admin/audit-logs:
+    get:
+      summary: 감사 로그 조회 (관리자 전용)
+      tags:
+        - Administration
+      parameters:
+        - in: query
+          name: userId
+          schema:
+            type: integer
+          description: 사용자 ID 필터
+        - in: query
+          name: action
+          schema:
+            type: string
+          description: 작업 필터
+        - in: query
+          name: resourceType
+          schema:
+            type: string
+          description: 리소스 타입 필터
+        - in: query
+          name: startDate
+          schema:
+            type: string
+            format: date-time
+          description: 시작 날짜
+        - in: query
+          name: endDate
+          schema:
+            type: string
+            format: date-time
+          description: 종료 날짜
+        - in: query
+          name: page
+          schema:
+            type: integer
+            default: 1
+          description: 페이지 번호
+        - in: query
+          name: limit
+          schema:
+            type: integer
+            default: 50
+          description: 페이지당 항목 수
+      responses:
+        '200':
+          description: 감사 로그 목록
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Response'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          items:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                id:
+                                  type: integer
+                                userId:
+                                  type: integer
+                                action:
+                                  type: string
+                                resourceType:
+                                  type: string
+                                resourceId:
+                                  type: string
+                                timestamp:
+                                  type: string
+                                  format: date-time
+                                ipAddress:
+                                  type: string
+                                details:
+                                  type: object
+                                success:
+                                  type: boolean
+                          total:
+                            type: integer
+                          page:
+                            type: integer
+                          limit:
+                            type: integer
+
+  /metrics/system:
+    get:
+      summary: 시스템 메트릭 조회
+      tags:
+        - Monitoring
+      parameters:
+        - in: query
+          name: period
+          schema:
+            type: string
+            default: "1h"
+          description: 기간 (예: 1h, 6h, 1d, 7d)
+        - in: query
+          name: interval
+          schema:
+            type: string
+            default: "1m"
+          description: 간격 (예: 10s, 1m, 5m, 1h)
+      responses:
+        '200':
+          description: 시스템 메트릭
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Response'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          cpu:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                timestamp:
+                                  type: string
+                                  format: date-time
+                                value:
+                                  type: number
+                          memory:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                timestamp:
+                                  type: string
+                                  format: date-time
+                                value:
+                                  type: number
+                          disk:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                timestamp:
+                                  type: string
+                                  format: date-time
+                                value:
+                                  type: number
+                          network:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                timestamp:
+                                  type: string
+                                  format: date-time
+                                value:
+                                  type: number
+
+  /metrics/deployments:
+    get:
+      summary: 배포 메트릭 조회
+      tags:
+        - Monitoring
+      parameters:
+        - in: query
+          name: period
+          schema:
+            type: string
+            default: "7d"
+          description: 기간 (예: 1d, 7d, 30d)
+        - in: query
+          name: projectId
+          schema:
+            type: integer
+          description: 프로젝트 ID 필터
+      responses:
+        '200':
+          description: 배포 메트릭
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Response'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          totalDeployments:
+                            type: integer
+                          successRate:
+                            type: number
+                          averageDuration:
+                            type: number
+                          deploymentsPerDay:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                date:
+                                  type: string
+                                  format: date
+                                count:
+                                  type: integer
+                                success:
+                                  type: integer
+                                failure:
+                                  type: integer
